@@ -1,20 +1,36 @@
 {
-  "name": "drizzle",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest",
-    "@types/pg": "^8.20.0",
-    "drizzle-kit": "^0.31.10",
-    "tsx": "^4.21.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "dotenv": "^17.4.2",
-    "drizzle-orm": "^0.45.2",
-    "pg": "^8.20.0"
-  }
+	"name": "@sw/drizzle",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"generate": "bunx drizzle-kit generate",
+		"push": "bunx drizzle-kit push",
+		"pull": "bunx drizzle-kit pull",
+		"check": "bunx drizzle-kit check",
+		"up": "bunx drizzle-kit up",
+		"studio": "bunx drizzle-kit studio",
+		"migrate": "bunx drizzle-kit migrate",
+		"lint": "biome check"
+	},
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
+		}
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"@types/pg": "^8.20.0",
+		"drizzle-kit": "^0.31.10",
+		"tsx": "^4.21.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"dotenv": "^17.4.2",
+		"drizzle-orm": "^0.45.2",
+		"pg": "^8.20.0"
+	}
 }

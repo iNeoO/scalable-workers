@@ -1,25 +1,31 @@
 {
-  "name": "@scalable-workers/source",
-  "version": "0.0.0",
-  "license": "MIT",
-  "scripts": {},
-  "private": true,
-  "dependencies": {
-    "dotenv": "^17.4.2",
-    "drizzle-orm": "^0.45.2",
-    "pg": "^8.20.0"
-  },
-  "devDependencies": {
-    "@nx/js": "22.7.1",
-    "@swc-node/register": "~1.11.1",
-    "@swc/core": "~1.15.5",
-    "@swc/helpers": "~0.5.18",
-    "nx": "22.7.1",
-    "tslib": "^2.3.0",
-    "typescript": "~5.9.2"
-  },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+	"name": "@sw/source",
+	"version": "0.0.0",
+	"license": "MIT",
+	"scripts": {
+		"backend:dev": "dotenv -e .env -- bun run --filter @sw/backend dev",
+		"db:generate": "dotenv -e .env -- bun run --filter @sw/drizzle generate",
+		"db:push": "dotenv -e .env -- bun run --filter @sw/drizzle push",
+		"db:pull": "dotenv -e .env -- bun run --filter @sw/drizzle pull",
+		"db:check": "dotenv -e .env -- bun run --filter @sw/drizzle check",
+		"db:up": "dotenv -e .env -- bun run --filter @sw/drizzle up",
+		"db:studio": "dotenv -e .env -- bun run --filter @sw/drizzle studio",
+		"db:migrate": "dotenv -e .env -- bun run --filter @sw/drizzle migrate",
+		"lint": "bun run --filter '*' lint"
+	},
+	"private": true,
+	"devDependencies": {
+		"@nx/js": "22.7.1",
+		"@swc-node/register": "~1.11.1",
+		"@swc/core": "~1.15.5",
+		"@swc/helpers": "~0.5.18",
+		"dotenv-cli": "^11.0.0",
+		"nx": "22.7.1",
+		"tslib": "^2.3.0",
+		"typescript": "~5.9.2"
+	},
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	]
 }

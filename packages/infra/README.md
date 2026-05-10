@@ -1,4 +1,4 @@
-# drizzle
+# infra
 
 To install dependencies:
 

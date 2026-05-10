@@ -21,9 +21,6 @@ services:
   rabbitmq:
     image: rabbitmq:4-management-alpine
     container_name: scalable-worker-rabbitmq-dev
-    volumes:
-      - ./monitoring/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
-      - ./monitoring/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
     ports:
       - "127.0.0.1:5672:5672"
       - "127.0.0.1:15672:15672"

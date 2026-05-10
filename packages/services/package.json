@@ -1,0 +1,20 @@
+{
+	"name": "@sw/services",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {},
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
+		}
+	},
+	"devDependencies": {},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@sw/drizzle": "workspace:*"
+	}
+}

@@ -43,3 +43,12 @@ export const logHttpCompletion = (
 		},
 		"Request completed",
 	);
+
+type WorkerBindings = {
+	workerId: string;
+	reqId: string;
+	taskId: string;
+};
+
+export const createWorkerLogger = (bindings: WorkerBindings) =>
+	pinoLogger.child(bindings);

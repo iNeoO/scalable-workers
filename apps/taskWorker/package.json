@@ -1,0 +1,24 @@
+{
+	"name": "@sw/task-worker",
+	"version": "1.0.50",
+	"type": "module",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"dev": "bun run --watch src/consumer/index.ts"
+	},
+	"dependencies": {
+		"@sw/infra": "workspace:*",
+		"@sw/services": "workspace:*",
+		"amqplib": "^2.0.1"
+	},
+	"exports": {
+		"./provider": {
+			"default": "./src/provider/index.ts",
+			"types": "./src/provider/index.ts"
+		}
+	},
+	"devDependencies": {
+		"bun-types": "latest"
+	},
+	"module": "src/index.js"
+}

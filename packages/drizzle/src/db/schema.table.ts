@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
 	foreignKey,
 	integer,
@@ -52,3 +53,25 @@ export const tasksTable = pgTable(
 		}),
 	],
 );
+
+export const workersRelations = relations(workersTable, ({ many, one }) => ({
+	currentTask: one(tasksTable, {
+		fields: [workersTable.currentTaskId],
+		references: [tasksTable.id],
+		relationName: "workers_current_task",
+	}),
+	processedTasks: many(tasksTable, {
+		relationName: "workers_processed_tasks",
+	}),
+}));
+
+export const tasksRelations = relations(tasksTable, ({ many, one }) => ({
+	currentForWorkers: many(workersTable, {
+		relationName: "workers_current_task",
+	}),
+	processedByWorker: one(workersTable, {
+		fields: [tasksTable.processedBy],
+		references: [workersTable.id],
+		relationName: "workers_processed_tasks",
+	}),
+}));

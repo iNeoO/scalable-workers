@@ -263,26 +263,6 @@ Deletes a worker by `id`.
 }
 ```
 
-#### `PATCH /task-settings`
-
-Updates task duration settings.
-
-**Body**
-
-```typescript
-{
-  durationMs: number;
-}
-```
-
-**Response**
-
-```typescript
-{
-  durationMs: number;
-}
-```
-
 ## Frontend
 
 - Display stats in cards at the top of the page

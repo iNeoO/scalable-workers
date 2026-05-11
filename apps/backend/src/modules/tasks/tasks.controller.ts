@@ -1,0 +1,30 @@
+import { wrapWithLogger } from "@sw/infra/libs";
+import type { TasksService } from "@sw/services";
+import { t } from "elysia";
+import { createAppWithLog } from "../../factories/appWithLog";
+
+export const createTasksController = (tasksServices: TasksService) => {
+	return createAppWithLog({ prefix: "tasks" })
+		.get("/", async ({ logger }) => {
+			return wrapWithLogger(logger, () => tasksServices.getTasks());
+		})
+		.post(
+			"/",
+			async ({ logger, body }) => {
+				return wrapWithLogger(logger, () => tasksServices.createTask(body));
+			},
+			{
+				body: t.Object({
+					status: t.Union([
+						t.Literal("pending"),
+						t.Literal("running"),
+						t.Literal("finished"),
+					]),
+					duration: t.Number(),
+				}),
+			},
+		)
+		.delete("/:id", async ({ logger, params: { id } }) => {
+			return wrapWithLogger(logger, () => tasksServices.deleteTask(id));
+		});
+};

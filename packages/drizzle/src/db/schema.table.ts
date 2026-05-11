@@ -15,7 +15,12 @@ export const taskStatusEnum = pgEnum("tasksStatus", [
 	"finished",
 ]);
 
-export const workerStatusEnum = pgEnum("workerStatus", ["idle", "busy"]);
+export const workerStatusEnum = pgEnum("workerStatus", [
+	"boot",
+	"idle",
+	"busy",
+	"shutdown",
+]);
 
 export const workersTable = pgTable(
 	"workers",
@@ -25,6 +30,7 @@ export const workersTable = pgTable(
 		tasksDone: integer().notNull(),
 		currentTaskId: uuid(),
 		createdAt: timestamp().defaultNow().notNull(),
+		deletedAt: timestamp(),
 	},
 	(table): PgTableExtraConfigValue[] => [
 		foreignKey({

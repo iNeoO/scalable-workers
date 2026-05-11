@@ -1,4 +1,4 @@
-import { type Database, eq, sql, workersTable } from "@sw/drizzle";
+import { type Database, eq, isNotNull, sql, workersTable } from "@sw/drizzle";
 import { getLoggerStore } from "../../../infra/src/libs/asyncLocalStorage.js";
 import type { CreateWorkerParams, UpdateWorkerParams } from "./workers.type.js";
 
@@ -11,6 +11,7 @@ export class WorkersService {
 
 	async getWorkers() {
 		return await this.drizzle.query.workersTable.findMany({
+			where: isNotNull(workersTable.deletedAt),
 			with: {
 				currentTask: true,
 				processedTasks: true,
@@ -54,7 +55,10 @@ export class WorkersService {
 			.returning();
 
 		if (!updatedWorker) {
-			logger.error({ id, status, isNbTaskUpdate, currentTaskId }, "failed to update worker");
+			logger.error(
+				{ id, status, isNbTaskUpdate, currentTaskId },
+				"failed to update worker",
+			);
 			throw new Error("failed to update worker");
 		}
 
@@ -65,7 +69,10 @@ export class WorkersService {
 		const logger = getLoggerStore();
 		logger.info({ id }, "delete worker");
 		const [deletedWorker] = await this.drizzle
-			.delete(workersTable)
+			.update(workersTable)
+			.set({
+				deletedAt: new Date(),
+			})
 			.where(eq(workersTable.id, id))
 			.returning();
 

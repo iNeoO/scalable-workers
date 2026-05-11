@@ -1,12 +1,15 @@
 import { type Database, eq, tasksTable } from "@sw/drizzle";
+import type { TaskProvider } from "@sw/task-worker/provider";
 import { getLoggerStore } from "../../../infra/src/libs/asyncLocalStorage";
 import type { CreateTaskParams, ProcessTaskParams } from "./tasks.type.js";
 
 export class TasksService {
 	private readonly drizzle: Database;
+	private readonly taskProvider: TaskProvider;
 
-	constructor(drizzle: Database) {
+	constructor(drizzle: Database, taskProvider: TaskProvider) {
 		this.drizzle = drizzle;
+		this.taskProvider = taskProvider;
 	}
 
 	async getTasks() {
@@ -29,6 +32,8 @@ export class TasksService {
 			logger.error({ task }, "failed to create task");
 			throw new Error("failed to create task");
 		}
+
+		this.taskProvider.send(createdTask.id);
 
 		return createdTask;
 	}

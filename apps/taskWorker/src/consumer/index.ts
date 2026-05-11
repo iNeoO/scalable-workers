@@ -16,14 +16,16 @@ export class TaskConsumer {
 	private channel?: amqp.Channel;
 	private tasksService: TasksService;
 	private workersService: WorkersService;
-	private id?: string;
+	private id: string;
 
 	constructor(
+		id: string,
 		url: string,
 		queue: string,
 		taskServices: TasksService,
 		workersServices: WorkersService,
 	) {
+		this.id = id;
 		this.url = url;
 		this.queue = queue;
 		this.tasksService = taskServices;
@@ -40,7 +42,7 @@ export class TaskConsumer {
 			},
 		});
 		this.channel.prefetch(1);
-		const workerId = await this.registerWorker();
+		await this.registerWorker();
 		this.channel.consume(this.queue, async (msg) => {
 			const id = this.getTaskIdFromMessage(msg);
 			if (!id) {
@@ -48,7 +50,7 @@ export class TaskConsumer {
 				return;
 			}
 			const logger = createWorkerLogger({
-				workerId,
+				workerId: this.id,
 				reqId: crypto.randomUUID(),
 				taskId: id,
 			});
@@ -58,25 +60,16 @@ export class TaskConsumer {
 	}
 
 	private async registerWorker() {
-		const worker = await this.workersService.createWorker({
+		await this.workersService.updateWorker({
+			id: this.id,
 			status: "idle",
-			tasksDone: 0,
+			isNbTaskUpdate: false,
+			currentTaskId: null,
 		});
-
-		this.id = worker.id;
-
-		return worker.id;
 	}
 
 	private getTaskIdFromMessage(msg: amqp.ConsumeMessage | null) {
 		return msg?.content.toString();
-	}
-
-	private getId() {
-		if (!this.id) {
-			throw new Error("worker missing id");
-		}
-		return this.id;
 	}
 
 	async handler(id: string) {
@@ -98,18 +91,17 @@ export class TaskConsumer {
 	}
 
 	private async startTask(id: string) {
-		const workerId = this.getId();
-		await this.setWorkerBusy(id, workerId);
+		await this.setWorkerBusy(id);
 		await this.tasksService.processTask({
 			id,
 			status: "running",
-			processedBy: workerId,
+			processedBy: this.id,
 		});
 	}
 
-	private async setWorkerBusy(taskId: string, workerId: string) {
+	private async setWorkerBusy(taskId: string) {
 		await this.workersService.updateWorker({
-			id: workerId,
+			id: this.id,
 			status: "busy",
 			isNbTaskUpdate: false,
 			currentTaskId: taskId,
@@ -123,14 +115,14 @@ export class TaskConsumer {
 	private async finishTask(id: string) {
 		await this.tasksService.processTask({
 			id,
-			processedBy: this.getId(),
+			processedBy: this.id,
 			status: "finished",
 		});
 	}
 
 	private async releaseWorker(taskId: string) {
 		await this.workersService.updateWorker({
-			id: this.getId(),
+			id: this.id,
 			status: "idle",
 			isNbTaskUpdate: true,
 			currentTaskId: taskId,

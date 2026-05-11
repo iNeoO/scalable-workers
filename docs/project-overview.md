@@ -192,7 +192,7 @@ type TaskEvent =
       type: "worker.created" | "worker.updated" | "worker.removed";
       data: {
         id: string;
-        status: "idle" | "busy";
+        status: "boot" | "idle" | "busy" | "shutdown";
         createdAt: Date;
         tasksDone: number;
         currentTaskId: string | null;

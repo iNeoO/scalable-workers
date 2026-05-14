@@ -1,0 +1,29 @@
+{
+	"name": "@sw/common",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"lint": "biome check"
+	},
+	"exports": {
+		"./constants": {
+			"types": "./src/constants/index.ts",
+			"default": "./src/constants/index.ts"
+		},
+		"./types": {
+			"types": "./src/types/index.ts",
+			"default": "./src/types/index.ts"
+		},
+		"./config": {
+			"types": "./src/config/index.ts",
+			"default": "./src/config/index.ts"
+		}
+	},
+	"dependencies": {
+		"zod": "catalog:"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	}
+}

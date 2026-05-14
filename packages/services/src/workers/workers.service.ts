@@ -1,5 +1,5 @@
-import { type Database, eq, isNotNull, sql, workersTable } from "@sw/drizzle";
-import { getLoggerStore } from "../../../infra/src/libs/asyncLocalStorage.js";
+import { type Database, eq, isNull, sql, workersTable } from "@sw/drizzle";
+import { getLoggerStore } from "@sw/infra/libs";
 import type { CreateWorkerParams, UpdateWorkerParams } from "./workers.type.js";
 
 export class WorkersService {
@@ -11,7 +11,7 @@ export class WorkersService {
 
 	async getWorkers() {
 		return await this.drizzle.query.workersTable.findMany({
-			where: isNotNull(workersTable.deletedAt),
+			where: isNull(workersTable.deletedAt),
 			with: {
 				currentTask: true,
 				processedTasks: true,

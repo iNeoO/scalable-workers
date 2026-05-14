@@ -1,3 +1,4 @@
+import { TASKS_STATUS, WORKERS_STATUS } from "@sw/common/constants";
 import { relations } from "drizzle-orm";
 import {
 	foreignKey,
@@ -10,16 +11,16 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const taskStatusEnum = pgEnum("tasksStatus", [
-	"pending",
-	"running",
-	"finished",
+	TASKS_STATUS.PENDING,
+	TASKS_STATUS.RUNNING,
+	TASKS_STATUS.FINISHED,
 ]);
 
 export const workerStatusEnum = pgEnum("workerStatus", [
-	"boot",
-	"idle",
-	"busy",
-	"shutdown",
+	WORKERS_STATUS.BOOT,
+	WORKERS_STATUS.IDLE,
+	WORKERS_STATUS.BUSY,
+	WORKERS_STATUS.SHUTDOWN,
 ]);
 
 export const workersTable = pgTable(
@@ -45,11 +46,13 @@ export const tasksTable = pgTable(
 	"tasks",
 	{
 		id: uuid().primaryKey().defaultRandom(),
-		duration: integer().notNull(),
+		durationMs: integer().notNull(),
 		status: taskStatusEnum().notNull(),
 		processedBy: uuid(),
 		createdAt: timestamp().defaultNow().notNull(),
 		updatedAt: timestamp().defaultNow().notNull(),
+		startedAt: timestamp(),
+		finishedAt: timestamp(),
 	},
 	(table): PgTableExtraConfigValue[] => [
 		foreignKey({

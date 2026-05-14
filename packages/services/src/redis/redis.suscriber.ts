@@ -13,29 +13,29 @@ import {
 import { StatsSchema, TaskSchema, WorkerSchema } from "./redis.schema.js";
 import type {
 	Stats,
-	StatsEvent,
+	StatsChannel,
 	Task,
-	TaskEvent,
+	TaskChannel,
 	Worker,
-	WorkerEvent,
+	WorkerChannel,
 } from "./redis.type.js";
 
-const taskEvents = taskEventStatuses.map(taskEvent) as readonly TaskEvent[];
+const taskEvents = taskEventStatuses.map(taskEvent) as readonly TaskChannel[];
 const workerEvents = workerEventStatuses.map(
 	workerEvent,
-) as readonly WorkerEvent[];
+) as readonly WorkerChannel[];
 
-const isTaskEvent = (channel: string): channel is TaskEvent =>
+const isTaskChannel = (channel: string): channel is TaskChannel =>
 	(taskEvents as readonly string[]).includes(channel);
 
-const isWorkerEvent = (channel: string): channel is WorkerEvent =>
+const isWorkerChannel = (channel: string): channel is WorkerChannel =>
 	(workerEvents as readonly string[]).includes(channel);
 
 export class RedisSubscriber {
 	private readonly redis: Redis;
-	private taskCallback?: (type: TaskEvent, task: Task) => void;
-	private workerCallback?: (type: WorkerEvent, worker: Worker) => void;
-	private statsCallback?: (type: StatsEvent, stats: Stats) => void;
+	private taskCallback?: (type: TaskChannel, task: Task) => void;
+	private workerCallback?: (type: WorkerChannel, worker: Worker) => void;
+	private statsCallback?: (type: StatsChannel, stats: Stats) => void;
 	private taskTimeout?: ReturnType<typeof setTimeout>;
 	private workerTimeout?: ReturnType<typeof setTimeout>;
 	private statsTimeout?: ReturnType<typeof setTimeout>;
@@ -72,7 +72,7 @@ export class RedisSubscriber {
 			return;
 		}
 
-		if (!isTaskEvent(channel)) {
+		if (!isTaskChannel(channel)) {
 			this.warnWrongChannel(channel, taskEventPattern());
 			return;
 		}
@@ -98,7 +98,7 @@ export class RedisSubscriber {
 			return;
 		}
 
-		if (!isWorkerEvent(channel)) {
+		if (!isWorkerChannel(channel)) {
 			this.warnWrongChannel(channel, workerEventPattern());
 			return;
 		}
@@ -161,7 +161,7 @@ export class RedisSubscriber {
 		);
 	}
 
-	async subscribeTask(cb: (type: TaskEvent, task: Task) => void) {
+	async subscribeTask(cb: (type: TaskChannel, task: Task) => void) {
 		this.taskCallback = cb;
 		const pattern = taskEventPattern();
 		await this.redis.psubscribe(pattern);
@@ -182,7 +182,7 @@ export class RedisSubscriber {
 		await this.redis.punsubscribe(taskEventPattern());
 	}
 
-	async subscribeWorker(cb: (type: WorkerEvent, worker: Worker) => void) {
+	async subscribeWorker(cb: (type: WorkerChannel, worker: Worker) => void) {
 		this.workerCallback = cb;
 		const pattern = workerEventPattern();
 		await this.redis.psubscribe(pattern);
@@ -203,7 +203,7 @@ export class RedisSubscriber {
 		await this.redis.punsubscribe(workerEventPattern());
 	}
 
-	async subscribeStats(cb: (type: StatsEvent, stats: Stats) => void) {
+	async subscribeStats(cb: (type: StatsChannel, stats: Stats) => void) {
 		this.statsCallback = cb;
 		const channel = statsUpdated();
 		await this.redis.subscribe(channel);

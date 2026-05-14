@@ -1,15 +1,27 @@
+import { TASKS_STATUS } from "@sw/common/constants";
 import { type Database, eq, tasksTable } from "@sw/drizzle";
+import { getLoggerStore } from "@sw/infra/libs";
 import type { TaskProvider } from "@sw/task-worker/provider";
-import { getLoggerStore } from "../../../infra/src/libs/asyncLocalStorage";
+import type { RedisService } from "../redis/redis.service.js";
+import type { StatsService } from "../stats/stats.service";
 import type { CreateTaskParams, ProcessTaskParams } from "./tasks.type.js";
 
 export class TasksService {
 	private readonly drizzle: Database;
 	private readonly taskProvider: TaskProvider;
+	private readonly redisService: RedisService;
+	private readonly statsService: StatsService;
 
-	constructor(drizzle: Database, taskProvider: TaskProvider) {
+	constructor(
+		drizzle: Database,
+		taskProvider: TaskProvider,
+		redisService: RedisService,
+		statsService: StatsService,
+	) {
 		this.drizzle = drizzle;
 		this.taskProvider = taskProvider;
+		this.redisService = redisService;
+		this.statsService = statsService;
 	}
 
 	async getTasks() {
@@ -25,7 +37,7 @@ export class TasksService {
 		logger.info({ task }, "New task");
 		const [createdTask] = await this.drizzle
 			.insert(tasksTable)
-			.values(task)
+			.values({ ...task, status: TASKS_STATUS.PENDING })
 			.returning();
 
 		if (!createdTask) {
@@ -34,20 +46,26 @@ export class TasksService {
 		}
 
 		this.taskProvider.send(createdTask.id);
-
+		await this.redisService.incrementTasksWaiting();
+		await Promise.all([
+			this.statsService.publishStats(),
+			this.redisService.publishTask(createdTask, "created"),
+		]);
 		return createdTask;
 	}
 
 	async processTask({ id, status, processedBy }: ProcessTaskParams) {
 		const logger = getLoggerStore();
-		const updatedAt = new Date();
 		logger.info({ id, status, processedBy }, "task processed");
+		const now = new Date();
 		const [processedTask] = await this.drizzle
 			.update(tasksTable)
 			.set({
 				status,
-				updatedAt,
+				updatedAt: now,
 				processedBy,
+				startedAt: status === TASKS_STATUS.RUNNING ? now : undefined,
+				finishedAt: status === TASKS_STATUS.FINISHED ? now : undefined,
 			})
 			.where(eq(tasksTable.id, id))
 			.returning();

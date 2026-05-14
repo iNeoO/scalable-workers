@@ -15,12 +15,7 @@ export const createTasksController = (tasksServices: TasksService) => {
 			},
 			{
 				body: t.Object({
-					status: t.Union([
-						t.Literal("pending"),
-						t.Literal("running"),
-						t.Literal("finished"),
-					]),
-					duration: t.Number(),
+					durationMs: t.Number(),
 				}),
 			},
 		)

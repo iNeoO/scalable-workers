@@ -47,8 +47,9 @@ export const logHttpCompletion = (
 type WorkerBindings = {
 	workerId: string;
 	reqId: string;
-	taskId: string;
 };
 
 export const createWorkerLogger = (bindings: WorkerBindings) =>
 	pinoLogger.child(bindings);
+
+export type PinoLogger = pino.Logger;

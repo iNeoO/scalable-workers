@@ -1,5 +1,7 @@
-import Redis from "ioredis";
+import IoRedis from "ioredis";
 import { pinoLogger } from "./pino";
+
+export type Redis = IoRedis;
 
 const logger = pinoLogger.child({ from: "redis" });
 
@@ -14,7 +16,7 @@ export const initRedis = async ({
 	username?: string;
 	password?: string;
 }) => {
-	const redis = new Redis({
+	const redis = new IoRedis({
 		host,
 		port,
 		username,

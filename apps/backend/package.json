@@ -7,12 +7,14 @@
 		"dev": "bun run --watch src/index.ts"
 	},
 	"dependencies": {
-		"@sw/services": "workspace:*",
+		"@sw/common": "workspace:*",
 		"@sw/infra": "workspace:*",
-		"elysia": "latest"
+		"@sw/task-worker": "workspace:*",
+		"@sw/services": "workspace:*",
+		"elysia": "catalog:"
 	},
 	"devDependencies": {
-		"bun-types": "latest"
+		"@types/bun": "catalog:"
 	},
 	"module": "src/index.js"
 }

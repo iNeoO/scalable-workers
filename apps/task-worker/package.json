@@ -7,9 +7,11 @@
 		"dev": "bun run --watch src/consumer/index.ts"
 	},
 	"dependencies": {
+		"@sw/common": "workspace:*",
 		"@sw/infra": "workspace:*",
 		"@sw/services": "workspace:*",
-		"amqplib": "^2.0.1"
+		"@sw/task-worker": "workspace:*",
+		"amqplib": "catalog:"
 	},
 	"exports": {
 		"./provider": {
@@ -18,7 +20,7 @@
 		}
 	},
 	"devDependencies": {
-		"bun-types": "latest"
+		"@types/bun": "catalog:"
 	},
 	"module": "src/index.js"
 }

@@ -15,8 +15,9 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
+		"@sw/common": "workspace:*",
 		"@sw/drizzle": "workspace:*",
 		"@sw/task-worker": "workspace:*",
-		"zod": "^4.0.0"
+		"zod": "catalog:"
 	}
 }

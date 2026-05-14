@@ -1,4 +1,5 @@
-import type Redis from "ioredis";
+import type { TaskEvent, WorkerEvent } from "@sw/common/types";
+import type { Redis } from "@sw/infra/libs";
 import { z } from "zod";
 import {
 	statsUpdated,
@@ -9,9 +10,9 @@ import {
 	workerEvent,
 	workersCount,
 } from "./redis.key.js";
-import type { Task, Worker } from "./redis.type.js";
+import type { Stats, Task, Worker } from "./redis.type.js";
 
-const redisNumberSchema = z.coerce.number().finite();
+const redisNumberSchema = z.coerce.number();
 
 export class RedisService {
 	private redis: Redis;
@@ -129,22 +130,18 @@ export class RedisService {
 		};
 	}
 
-	async publishTask(task: Task, status: "created" | "started" | "finished") {
+	async publishTask(task: Task, status: TaskEvent) {
 		const key = taskEvent(status);
 		return await this.redis.publish(key, JSON.stringify(task));
 	}
 
-	async publishWorker(
-		worker: Worker,
-		status: "created" | "updated" | "removed",
-	) {
+	async publishWorker(worker: Worker, status: WorkerEvent) {
 		const key = workerEvent(status);
 		return await this.redis.publish(key, JSON.stringify(worker));
 	}
 
-	async publishStats() {
+	async publishStats(stats: Stats) {
 		const key = statsUpdated();
-		const stats = await this.stats();
 		return await this.redis.publish(key, JSON.stringify(stats));
 	}
 }

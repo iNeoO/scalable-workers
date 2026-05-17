@@ -15,12 +15,37 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PG_URL: postgresql
+      NX_DAEMON: "false"
     steps:
       - uses: actions/checkout@v4
         with:
           filter: tree:0
           fetch-depth: 0
-      - uses: oven-sh/setup-bun@v2    
+      - uses: oven-sh/setup-bun@v2
+
       - run: bun install
-      - run: npm run build
-      - run: npm run lint
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            .nx/cache
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-nx-${{ hashFiles('bun.lock', 'nx.json', 'package.json', '**/package.json', 'tsconfig*.json', '**/tsconfig*.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nx-
+
+      - name: Lint affected
+        if: github.event_name == 'pull_request'
+        run: npx nx affected -t lint --base=origin/${{ github.base_ref }} --head=${{ github.sha }}
+
+      - name: Build affected
+        if: github.event_name == 'pull_request'
+        run: npx nx affected -t build --base=origin/${{ github.base_ref }} --head=${{ github.sha }}
+
+      - name: Lint affected on main
+        if: github.event_name != 'pull_request'
+        run: npx nx affected -t lint --base=HEAD~1 --head=HEAD
+
+      - name: Build affected on main
+        if: github.event_name != 'pull_request'
+        run: npx nx affected -t build --base=HEAD~1 --head=HEAD

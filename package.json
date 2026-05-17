@@ -3,7 +3,7 @@
 	"version": "0.0.0",
 	"license": "MIT",
 	"scripts": {
-		"build": "bun run --filter @sw/common build && bun run --filter @sw/drizzle build && bun run --filter @sw/infra build && bun run --filter @sw/services build && bun run --filter @sw/task-worker build && bun run --filter @sw/backend build",
+		"build": "npx nx run-many -t build --all",
 		"worker:dev": "dotenv -e .env -- bun run --filter @sw/task-worker dev",
 		"backend:dev": "dotenv -e .env -- bun run --filter @sw/backend dev",
 		"db:generate": "dotenv -e .env -- bun run --filter @sw/drizzle generate",
@@ -13,7 +13,7 @@
 		"db:up": "dotenv -e .env -- bun run --filter @sw/drizzle up",
 		"db:studio": "dotenv -e .env -- bun run --filter @sw/drizzle studio",
 		"db:migrate": "dotenv -e .env -- bun run --filter @sw/drizzle migrate",
-		"lint": "bun run --filter '*' lint"
+		"lint": "npx nx run-many -t lint --all"
 	},
 	"private": true,
 	"devDependencies": {

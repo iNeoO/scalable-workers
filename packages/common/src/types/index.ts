@@ -1,1 +1,6 @@
-export type { TaskStatus, WorkerStatus, TaskEvent, WorkerEvent } from "./status.type.js";
+export type {
+	TaskEvent,
+	TaskStatus,
+	WorkerEvent,
+	WorkerStatus,
+} from "./status.type.js";

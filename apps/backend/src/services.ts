@@ -1,7 +1,12 @@
 import { type Database, db } from "@sw/drizzle";
 import { env } from "@sw/infra/config";
 import { factory, type Redis } from "@sw/infra/libs";
-import { RedisService, StatsService, TasksService, WorkersService } from "@sw/services";
+import {
+	RedisService,
+	StatsService,
+	TasksService,
+	WorkersService,
+} from "@sw/services";
 import { TaskProvider } from "@sw/task-worker/provider";
 
 export type AppServices = {
@@ -21,13 +26,22 @@ export const createServices = async (): Promise<AppServices> => {
 		password: env.REDIS_SW_PASSWORD,
 	});
 	const redisService = new RedisService(redis);
-	const statsService = new StatsService(redisService, env.AMQP_URL, env.AMQP_QUEUE);
+	const statsService = new StatsService(
+		redisService,
+		env.AMQP_URL,
+		env.AMQP_QUEUE,
+	);
 	const taskProvider = new TaskProvider(env.AMQP_URL, env.AMQP_QUEUE);
 	const workersService = new WorkersService(db);
 
 	await Promise.all([statsService.init(), taskProvider.init()]);
 
-	const tasksService = new TasksService(db, taskProvider, redisService, statsService);
+	const tasksService = new TasksService(
+		db,
+		taskProvider,
+		redisService,
+		statsService,
+	);
 
 	return {
 		redis,

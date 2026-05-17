@@ -8,10 +8,7 @@ const requiredEnvKeys = [
 	"REDIS_SW_PORT",
 ] as const;
 
-const optionalEnvKeys = [
-	"REDIS_SW_PASSWORD",
-	"REDIS_SW_USERNAME",
-] as const;
+const optionalEnvKeys = ["REDIS_SW_PASSWORD", "REDIS_SW_USERNAME"] as const;
 
 const getDockerEnvArgs = (keys: readonly string[]) =>
 	keys.flatMap((key) => ["--env", key]);

@@ -28,7 +28,6 @@ export const workersTable = pgTable(
 	{
 		id: uuid().primaryKey().defaultRandom(),
 		status: workerStatusEnum().notNull(),
-		tasksDone: integer().notNull(),
 		currentTaskId: uuid(),
 		createdAt: timestamp().defaultNow().notNull(),
 		deletedAt: timestamp(),

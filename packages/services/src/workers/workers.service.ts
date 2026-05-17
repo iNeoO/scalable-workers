@@ -1,5 +1,12 @@
-import { WORKERS_STATUS } from "@sw/common/constants";
-import { type Database, eq, isNull, sql, workersTable } from "@sw/drizzle";
+import { TASKS_STATUS, WORKERS_STATUS } from "@sw/common/constants";
+import {
+	and,
+	type Database,
+	eq,
+	isNull,
+	tasksTable,
+	workersTable,
+} from "@sw/drizzle";
 import { getLoggerStore } from "@sw/infra/libs";
 import type { CreateWorkerParams, UpdateWorkerParams } from "./workers.type.js";
 
@@ -10,45 +17,60 @@ export class WorkersService {
 		this.drizzle = drizzle;
 	}
 
+	private async getWorkerWithRelations(id: string) {
+		return await this.drizzle.query.workersTable.findFirst({
+			where: and(eq(workersTable.id, id), isNull(workersTable.deletedAt)),
+			with: {
+				currentTask: true,
+				processedTasks: {
+					where: eq(tasksTable.status, TASKS_STATUS.FINISHED),
+				},
+			},
+		});
+	}
+
 	async getWorkers() {
 		return await this.drizzle.query.workersTable.findMany({
 			where: isNull(workersTable.deletedAt),
 			with: {
 				currentTask: true,
-				processedTasks: true,
+				processedTasks: {
+					where: eq(tasksTable.status, TASKS_STATUS.FINISHED),
+				},
 			},
 		});
 	}
 
 	async createWorker(worker: CreateWorkerParams) {
+		const logger = getLoggerStore();
 		const [createdWorker] = await this.drizzle
 			.insert(workersTable)
 			.values(worker)
 			.returning();
 
 		if (!createdWorker) {
-			const logger = getLoggerStore();
 			logger.error({ worker }, "failed to create worker");
 			throw new Error("failed to create worker");
 		}
 
-		return createdWorker;
+		const hydratedWorker = await this.getWorkerWithRelations(createdWorker.id);
+		if (!hydratedWorker) {
+			logger.error(
+				{ workerId: createdWorker.id },
+				"failed to hydrate created worker",
+			);
+			throw new Error("failed to hydrate created worker");
+		}
+
+		return hydratedWorker;
 	}
 
-	async updateWorker({
-		id,
-		status,
-		isNbTaskUpdate,
-		currentTaskId,
-	}: UpdateWorkerParams) {
+	async updateWorker({ id, status, currentTaskId }: UpdateWorkerParams) {
 		const logger = getLoggerStore();
-		logger.info({ id, status, isNbTaskUpdate, currentTaskId }, "worker update");
+		logger.info({ id, status, currentTaskId }, "worker update");
 		const [updatedWorker] = await this.drizzle
 			.update(workersTable)
 			.set({
-				...(isNbTaskUpdate
-					? { tasksDone: sql`${workersTable.tasksDone} + 1` }
-					: {}),
 				currentTaskId,
 				status,
 			})
@@ -56,14 +78,20 @@ export class WorkersService {
 			.returning();
 
 		if (!updatedWorker) {
-			logger.error(
-				{ id, status, isNbTaskUpdate, currentTaskId },
-				"failed to update worker",
-			);
+			logger.error({ id, status, currentTaskId }, "failed to update worker");
 			throw new Error("failed to update worker");
 		}
 
-		return updatedWorker;
+		const hydratedWorker = await this.getWorkerWithRelations(updatedWorker.id);
+		if (!hydratedWorker) {
+			logger.error(
+				{ workerId: updatedWorker.id },
+				"failed to hydrate updated worker",
+			);
+			throw new Error("failed to hydrate updated worker");
+		}
+
+		return hydratedWorker;
 	}
 
 	async deleteWorker(id: string) {
@@ -117,6 +145,15 @@ export class WorkersService {
 			throw new Error("failed to shutdown worker");
 		}
 
-		return updatedWorker;
+		const hydratedWorker = await this.getWorkerWithRelations(updatedWorker.id);
+		if (!hydratedWorker) {
+			logger.error(
+				{ workerId: updatedWorker.id },
+				"failed to hydrate shutdown worker",
+			);
+			throw new Error("failed to hydrate shutdown worker");
+		}
+
+		return hydratedWorker;
 	}
 }

@@ -6,4 +6,4 @@ export type CreateWorkerParams = Omit<
 >;
 export type UpdateWorkerParams = Required<
 	Pick<typeof workersTable.$inferInsert, "id" | "status" | "currentTaskId">
-> & { isNbTaskUpdate: boolean };
+>;

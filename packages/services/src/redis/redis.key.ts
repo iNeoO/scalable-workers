@@ -1,8 +1,16 @@
 import { TASK_EVENTS, WORKER_EVENTS } from "@sw/common/constants";
 
-export const taskEventStatuses = [TASK_EVENTS.CREATED, TASK_EVENTS.STARTED, TASK_EVENTS.FINISHED] as const;
+export const taskEventStatuses = [
+	TASK_EVENTS.CREATED,
+	TASK_EVENTS.STARTED,
+	TASK_EVENTS.FINISHED,
+] as const;
 export type TaskEventStatus = (typeof taskEventStatuses)[number];
-export const workerEventStatuses = [WORKER_EVENTS.CREATED, WORKER_EVENTS.UPDATED, WORKER_EVENTS.REMOVED] as const;
+export const workerEventStatuses = [
+	WORKER_EVENTS.CREATED,
+	WORKER_EVENTS.UPDATED,
+	WORKER_EVENTS.REMOVED,
+] as const;
 export type WorkerEventStatus = (typeof workerEventStatuses)[number];
 
 export const tasksProcessed = () => "tasksProcessed";

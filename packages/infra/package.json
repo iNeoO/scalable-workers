@@ -3,6 +3,7 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
+		"lint": "biome check",
 		"build": "rm -rf ./dist && bunx tsc -p ./tsconfig.build.json"
 	},
 	"main": "./dist/index.js",
@@ -32,6 +33,7 @@
 		"pino-pretty": "catalog:"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "catalog:",
 		"@types/bun": "catalog:"
 	},
 	"peerDependencies": {

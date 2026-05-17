@@ -6,5 +6,8 @@ export type CreateTaskParams = Omit<
 >;
 
 export type ProcessTaskParams = Required<
-	Omit<typeof tasksTable.$inferInsert, "createdAt" | "updatedAt" | "durationMs" | "startedAt" | "finishedAt">
+	Omit<
+		typeof tasksTable.$inferInsert,
+		"createdAt" | "updatedAt" | "durationMs" | "startedAt" | "finishedAt"
+	>
 >;

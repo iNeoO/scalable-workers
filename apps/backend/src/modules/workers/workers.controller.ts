@@ -16,7 +16,6 @@ export const createWorkersController = (WorkersService: WorkersService) => {
 			return wrapWithLogger(logger, async () => {
 				const worker = await WorkersService.createWorker({
 					status: WORKERS_STATUS.BOOT,
-					tasksDone: 0,
 				});
 
 				try {

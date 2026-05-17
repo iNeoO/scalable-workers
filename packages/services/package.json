@@ -3,6 +3,7 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
+		"lint": "biome check",
 		"build": "rm -rf ./dist && bunx tsc -p ./tsconfig.build.json"
 	},
 	"main": "./dist/index.js",
@@ -14,7 +15,9 @@
 			"default": "./dist/index.js"
 		}
 	},
-	"devDependencies": {},
+	"devDependencies": {
+		"@biomejs/biome": "catalog:"
+	},
 	"peerDependencies": {
 		"typescript": "^5"
 	},

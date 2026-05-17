@@ -1,6 +1,11 @@
 import { db } from "@sw/drizzle";
 import { factory, pinoLogger } from "@sw/infra/libs";
-import { RedisService, StatsService, TasksService, WorkersService } from "@sw/services";
+import {
+	RedisService,
+	StatsService,
+	TasksService,
+	WorkersService,
+} from "@sw/services";
 import { env } from "./config/env.js";
 import { TaskConsumer } from "./consumer/index.js";
 import { TaskProvider } from "./provider/index.js";
@@ -15,7 +20,12 @@ const main = async (id: string, url: string, queue: string) => {
 	const redisService = new RedisService(redis);
 	const statsService = new StatsService(redisService, url, queue);
 	const taskProvider = new TaskProvider(url, queue);
-	const tasksServices = new TasksService(db, taskProvider, redisService, statsService);
+	const tasksServices = new TasksService(
+		db,
+		taskProvider,
+		redisService,
+		statsService,
+	);
 	const workersServices = new WorkersService(db);
 
 	const taskConsumer = new TaskConsumer(

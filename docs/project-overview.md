@@ -10,7 +10,6 @@ Build a dashboard to manage and monitor workers that process timed tasks.
 - `queue`: manages task distribution
 - `backend`: exposes monitoring and worker management APIs
 - `frontend`: displays the dashboard
-- `scheduler`: automatically creates tasks
 - `worker`: processes tasks
 
 ## Tech Stack
@@ -20,12 +19,11 @@ Build a dashboard to manage and monitor workers that process timed tasks.
 - `stats`: Redis
 - `backend`: Elysia
 - `frontend`: React
-- `scheduler`: node-cron
 - `worker`: TypeScript
 
-## Database
+## Data Model
 
-The project stores `tasks` and `workers` in PostgreSQL.
+The project stores `tasks` and `workers` in PostgreSQL and keeps live aggregate stats in Redis.
 
 ### Task
 
@@ -34,10 +32,11 @@ Represents a unit of work to process.
 ```typescript
 {
   id: string;
-  status: "pending" | "running" | "finished";
   durationMs: number;
+  status: "pending" | "running" | "finished";
   processedBy: string | null;
   createdAt: Date;
+  updatedAt: Date;
   startedAt: Date | null;
   finishedAt: Date | null;
 }
@@ -45,30 +44,33 @@ Represents a unit of work to process.
 
 ### Worker
 
-Represents a worker that can process one task at a time.
+Represents a worker runtime.
 
 ```typescript
 {
   id: string;
-  status: "idle" | "busy";
-  tasksDone: number;
+  status: "boot" | "idle" | "busy" | "shutdown";
   currentTaskId: string | null;
   createdAt: Date;
+  deletedAt: Date | null;
 }
 ```
 
-### Relationship
+### Relations
 
-- A worker can process one task at a time
-- A task is processed by zero or one worker
-- A finished task keeps the `processedBy` value for history
+- A worker can process one current task through `currentTaskId`
+- A task can be linked to the worker that processed it through `processedBy`
+- `GET /workers` returns the current task and finished processed tasks
+- `GET /tasks` returns relational data: `processedByWorker`
 
 ## Stats
 
-The project stores live stats in Redis.
+The live stats payload contains:
 
 ```typescript
 {
+  queueCount: number;
+  deadLetterQueueCount: number;
   tasksProcessed: number;
   tasksWaiting: number;
   workersCount: number;
@@ -76,142 +78,43 @@ The project stores live stats in Redis.
 }
 ```
 
-- `tasksProcessed`: incremented when a task reaches the `finished` status
-- `tasksWaiting`: incremented when a task is created, decremented when a worker starts processing it
-- `workersCount`: incremented when a worker is created, decremented when a worker is deleted
-- `averageTimeByTask`: updated when a task is finished
+- `queueCount`: current RabbitMQ queue depth
+- `deadLetterQueueCount`: current DLQ depth
+- `tasksProcessed`: incremented when a task finishes
+- `tasksWaiting`: incremented when a task is created, decremented when processing starts
+- `workersCount`: incremented when a worker registers as `idle`, decremented on shutdown
+- `averageTimeByTask`: computed from the total execution time stored in Redis
 
 ## Backend
 
-### Endpoints
+### Registered Endpoints
 
 #### `GET /tasks`
 
-Returns the global list of tasks.
-
-**Content-Type**
-
-```text
-application/json
-```
+Returns all tasks with the `processedByWorker` relation.
 
 **Response**
 
 ```typescript
 Array<{
   id: string;
+  durationMs: number;
   status: "pending" | "running" | "finished";
   processedBy: string | null;
-  durationMs: number;
   createdAt: Date;
+  updatedAt: Date;
   startedAt: Date | null;
   finishedAt: Date | null;
+  processedByWorker: Worker | null;
 }>
-```
-
-#### `GET /stats`
-
-Returns the current global statistics snapshot.
-
-**Content-Type**
-
-```text
-application/json
-```
-
-**Response**
-
-```typescript
-{
-  tasksProcessed: number;
-  tasksWaiting: number;
-  workersCount: number;
-  averageTimeByTask: number;
-}
-```
-
-#### `GET /workers`
-
-Returns the global list of workers.
-
-**Content-Type**
-
-```text
-application/json
-```
-
-**Response**
-
-```typescript
-Array<{
-  id: string;
-  status: "idle" | "busy";
-  createdAt: Date;
-  tasksDone: number;
-  currentTaskId: string | null;
-}>
-```
-
-#### `GET /sse`
-
-Global SSE endpoint that streams task, worker, and stats updates in real time.
-
-**Content-Type**
-
-```text
-text/event-stream
-```
-
-**SSE events**
-
-- `task.created`
-- `task.started`
-- `task.finished`
-- `worker.created`
-- `worker.updated`
-- `worker.removed`
-- `stats.updated`
-
-**Payload examples**
-
-```typescript
-type TaskEvent =
-  | {
-      type: "task.created" | "task.started" | "task.finished";
-      data: {
-        id: string;
-        status: "pending" | "running" | "finished";
-        processedBy: string | null;
-        durationMs: number;
-        createdAt: Date;
-        startedAt: Date | null;
-        finishedAt: Date | null;
-      };
-    }
-  | {
-      type: "worker.created" | "worker.updated" | "worker.removed";
-      data: {
-        id: string;
-        status: "boot" | "idle" | "busy" | "shutdown";
-        createdAt: Date;
-        tasksDone: number;
-        currentTaskId: string | null;
-      };
-    }
-  | {
-      type: "stats.updated";
-      data: {
-        tasksProcessed: number;
-        tasksWaiting: number;
-        workersCount: number;
-        averageTimeByTask: number;
-      };
-    };
 ```
 
 #### `POST /tasks`
 
-Creates a new task.
+Creates a task, publishes it to the queue, increments `tasksWaiting`, then emits:
+
+- `task.created`
+- `stats.updated`
 
 **Body**
 
@@ -226,59 +129,181 @@ Creates a new task.
 ```typescript
 {
   id: string;
-  status: "pending" | "running" | "finished";
-  processedBy: string | null;
   durationMs: number;
+  status: "pending";
+  processedBy: null;
   createdAt: Date;
-  startedAt: Date | null;
-  finishedAt: Date | null;
+  updatedAt: Date;
+  startedAt: null;
+  finishedAt: null;
 }
+```
+
+#### `DELETE /tasks/:id`
+
+Deletes a task row and returns the deleted entity.
+
+#### `GET /workers`
+
+Returns all non-deleted workers with their relations.
+
+**Response**
+
+```typescript
+Array<{
+  id: string;
+  status: "boot" | "idle" | "busy" | "shutdown";
+  currentTaskId: string | null;
+  createdAt: Date;
+  deletedAt: Date | null;
+  currentTask: Task | null;
+  processedTasks: Task[]; // only tasks with status "finished"
+}>
 ```
 
 #### `POST /workers`
 
-Creates a new worker.
+Creates a worker record in `boot`, starts its container, and returns both the worker and container metadata.
 
 **Response**
 
 ```typescript
 {
   id: string;
-  status: "idle" | "busy";
+  status: "boot";
+  currentTaskId: null;
   createdAt: Date;
-  tasksDone: number;
-  currentTaskId: string | null;
+  deletedAt: null;
+  currentTask: null;
+  processedTasks: Task[];
+  container: unknown;
 }
 ```
+
+Notes:
+
+- the worker is created in PostgreSQL before the container starts
+- if container startup fails, the worker row is hard-deleted
+- the worker later becomes `idle` when the runtime registers itself
 
 #### `DELETE /workers/:id`
 
-Deletes a worker by `id`.
+Marks the worker as `shutdown`, stops the container, and returns both the updated worker and container metadata.
 
 **Response**
 
 ```typescript
 {
   id: string;
+  status: "shutdown";
+  currentTaskId: string | null;
+  createdAt: Date;
+  deletedAt: Date | null;
+  currentTask: Task | null;
+  processedTasks: Task[]; // only tasks with status "finished"
+  container: unknown;
 }
 ```
 
-## Frontend
+#### `GET /stats`
 
-- Display stats in cards at the top of the page
-- Display a list of workers, the task each worker is processing, and controls to add or remove a worker
-- Display a table of completed tasks sorted by completion time
+The code currently registers two handlers on the same path:
 
-## Worker
+- `GET /stats` from `stats.controller.ts`: returns a JSON snapshot
+- `GET /stats` from `sse.controller.ts`: streams notifications as `text/event-stream`
 
-Process received tasks based on the configured task duration (`durationMs`).
+JSON snapshot payload:
 
-Update:
+```typescript
+{
+  queueCount: number;
+  deadLetterQueueCount: number;
+  tasksProcessed: number;
+  tasksWaiting: number;
+  workersCount: number;
+  averageTimeByTask: number;
+}
+```
 
-- number of tasks completed by each worker
-- average processing time
-- task status
+### Notifications
 
-## Scheduler
+The real-time stream is backed by Redis pub/sub and forwards three payload families:
 
-- Create `x` tasks every `intervalMs`
+```typescript
+type SseMessage =
+  | {
+      event: "stats.updated";
+      data: {
+        stats: {
+          queueCount: number;
+          deadLetterQueueCount: number;
+          tasksProcessed: number;
+          tasksWaiting: number;
+          workersCount: number;
+          averageTimeByTask: number;
+        };
+      };
+    }
+  | {
+      event: "task.created" | "task.started" | "task.finished";
+      data: {
+        task: {
+          id: string;
+          durationMs: number;
+          status: "pending" | "running" | "finished";
+          processedBy: string | null;
+          createdAt: Date;
+          startedAt: Date | null;
+          finishedAt: Date | null;
+        };
+      };
+    }
+  | {
+      event: "worker.created" | "worker.updated" | "worker.removed";
+      data: {
+        worker: {
+          id: string;
+          status: "boot" | "idle" | "busy" | "shutdown";
+          currentTaskId: string | null;
+          createdAt: Date;
+          deletedAt: Date | null;
+          currentTask: Task | null;
+          processedTasks: Task[];
+        };
+      };
+    };
+```
+
+Current emitted events in the code:
+
+- task lifecycle: `task.created`, `task.started`, `task.finished`
+- worker lifecycle: `worker.created`, `worker.updated`
+- stats: `stats.updated`
+
+Note:
+
+- `worker.removed` exists in the shared constants, but no current producer publishes it
+
+## Worker Lifecycle
+
+The effective worker status transitions are:
+
+1. `boot`: row created by `POST /workers`
+2. `idle`: worker process registers successfully
+3. `busy`: worker starts a task
+4. `idle`: worker finishes a task and is released
+5. `shutdown`: worker is stopped
+
+## Task Lifecycle
+
+The effective task status transitions are:
+
+1. `pending`: task created
+2. `running`: worker starts the task
+3. `finished`: worker completes the task
+
+## Frontend Expectations
+
+- Display live stats, including queue and DLQ depth
+- Display workers with status, current task, and completed-task count
+- Display task history and task lifecycle updates from notifications

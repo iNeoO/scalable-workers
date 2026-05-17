@@ -1,4 +1,8 @@
-import { TASK_EVENTS, TASKS_STATUS, WORKERS_STATUS } from "@sw/common/constants";
+import {
+	TASK_EVENTS,
+	TASKS_STATUS,
+	WORKERS_STATUS,
+} from "@sw/common/constants";
 import {
 	createWorkerLogger,
 	type PinoLogger,
@@ -116,7 +120,6 @@ export class TaskConsumer {
 		const worker = await this.workersService.updateWorker({
 			id: this.id,
 			status: WORKERS_STATUS.IDLE,
-			isNbTaskUpdate: false,
 			currentTaskId: null,
 		});
 		await Promise.all([
@@ -189,7 +192,6 @@ export class TaskConsumer {
 		const worker = await this.workersService.updateWorker({
 			id: this.id,
 			status: WORKERS_STATUS.BUSY,
-			isNbTaskUpdate: false,
 			currentTaskId: taskId,
 		});
 		await this.redisService.publishWorker(worker, "updated");
@@ -216,7 +218,6 @@ export class TaskConsumer {
 		const worker = await this.workersService.updateWorker({
 			id: this.id,
 			status: WORKERS_STATUS.IDLE,
-			isNbTaskUpdate: true,
 			currentTaskId: null,
 		});
 		await this.redisService.publishWorker(worker, "updated");
@@ -242,7 +243,6 @@ export class TaskConsumer {
 		const worker = await this.workersService.updateWorker({
 			id: this.id,
 			status: WORKERS_STATUS.SHUTDOWN,
-			isNbTaskUpdate: false,
 			currentTaskId: null,
 		});
 		await Promise.all([

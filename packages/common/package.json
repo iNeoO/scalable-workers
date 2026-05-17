@@ -4,20 +4,31 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
+		"build": "rm -rf ./dist && bunx tsc -p ./tsconfig.build.json",
 		"lint": "biome check"
 	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
 		"./constants": {
-			"types": "./src/constants/index.ts",
-			"default": "./src/constants/index.ts"
+			"types": "./dist/constants/index.d.ts",
+			"import": "./dist/constants/index.js",
+			"default": "./dist/constants/index.js"
 		},
 		"./types": {
-			"types": "./src/types/index.ts",
-			"default": "./src/types/index.ts"
+			"types": "./dist/types/index.d.ts",
+			"import": "./dist/types/index.js",
+			"default": "./dist/types/index.js"
 		},
 		"./config": {
-			"types": "./src/config/index.ts",
-			"default": "./src/config/index.ts"
+			"types": "./dist/config/index.d.ts",
+			"import": "./dist/config/index.js",
+			"default": "./dist/config/index.js"
 		}
 	},
 	"dependencies": {

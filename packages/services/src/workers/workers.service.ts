@@ -1,3 +1,4 @@
+import { WORKERS_STATUS } from "@sw/common/constants";
 import { type Database, eq, isNull, sql, workersTable } from "@sw/drizzle";
 import { getLoggerStore } from "@sw/infra/libs";
 import type { CreateWorkerParams, UpdateWorkerParams } from "./workers.type.js";
@@ -82,5 +83,40 @@ export class WorkersService {
 		}
 
 		return deletedWorker;
+	}
+
+	async hardDeleteWorker(id: string) {
+		const logger = getLoggerStore();
+		logger.info({ id }, "hard delete worker");
+		const [deletedWorker] = await this.drizzle
+			.delete(workersTable)
+			.where(eq(workersTable.id, id))
+			.returning();
+
+		if (!deletedWorker) {
+			logger.error({ id }, "failed to hard delete worker");
+			throw new Error("failed to hard delete worker");
+		}
+
+		return deletedWorker;
+	}
+
+	async shutdownWorker(id: string) {
+		const logger = getLoggerStore();
+		logger.info({ id }, "shutdown worker");
+		const [updatedWorker] = await this.drizzle
+			.update(workersTable)
+			.set({
+				status: WORKERS_STATUS.SHUTDOWN,
+			})
+			.where(eq(workersTable.id, id))
+			.returning();
+
+		if (!updatedWorker) {
+			logger.error({ id }, "failed to shutdown worker");
+			throw new Error("failed to shutdown worker");
+		}
+
+		return updatedWorker;
 	}
 }

@@ -1,16 +1,27 @@
 {
 	"name": "@sw/infra",
-	"module": "index.ts",
 	"type": "module",
 	"private": true,
+	"scripts": {
+		"build": "rm -rf ./dist && bunx tsc -p ./tsconfig.build.json"
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		},
 		"./libs": {
-			"types": "./src/libs/index.ts",
-			"default": "./src/libs/index.ts"
+			"types": "./dist/libs/index.d.ts",
+			"import": "./dist/libs/index.js",
+			"default": "./dist/libs/index.js"
 		},
 		"./config": {
-			"types": "./src/config/index.ts",
-			"default": "./src/config/index.ts"
+			"types": "./dist/config/index.d.ts",
+			"import": "./dist/config/index.js",
+			"default": "./dist/config/index.js"
 		}
 	},
 	"dependencies": {

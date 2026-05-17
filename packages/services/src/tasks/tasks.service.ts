@@ -1,10 +1,13 @@
 import { TASKS_STATUS } from "@sw/common/constants";
 import { type Database, eq, tasksTable } from "@sw/drizzle";
 import { getLoggerStore } from "@sw/infra/libs";
-import type { TaskProvider } from "@sw/task-worker/provider";
 import type { RedisService } from "../redis/redis.service.js";
 import type { StatsService } from "../stats/stats.service";
 import type { CreateTaskParams, ProcessTaskParams } from "./tasks.type.js";
+
+type TaskProvider = {
+	send(id: string): void;
+};
 
 export class TasksService {
 	private readonly drizzle: Database;

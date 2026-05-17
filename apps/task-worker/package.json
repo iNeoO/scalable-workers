@@ -3,24 +3,31 @@
 	"version": "1.0.50",
 	"type": "module",
 	"scripts": {
+		"build": "rm -rf ./dist && bunx tsc -p ./tsconfig.build.json",
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"dev": "bun run --watch src/consumer/index.ts"
 	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"dependencies": {
 		"@sw/common": "workspace:*",
 		"@sw/infra": "workspace:*",
 		"@sw/services": "workspace:*",
-		"@sw/task-worker": "workspace:*",
 		"amqplib": "catalog:"
 	},
 	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"default": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
 		"./provider": {
-			"default": "./src/provider/index.ts",
-			"types": "./src/provider/index.ts"
+			"import": "./dist/provider/index.js",
+			"default": "./dist/provider/index.js",
+			"types": "./dist/provider/index.d.ts"
 		}
 	},
 	"devDependencies": {
 		"@types/bun": "catalog:"
-	},
-	"module": "src/index.js"
+	}
 }

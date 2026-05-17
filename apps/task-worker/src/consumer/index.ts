@@ -239,10 +239,15 @@ export class TaskConsumer {
 			await this.connection.close();
 		}
 
-		const worker = await this.workersService.deleteWorker(this.id);
+		const worker = await this.workersService.updateWorker({
+			id: this.id,
+			status: WORKERS_STATUS.SHUTDOWN,
+			isNbTaskUpdate: false,
+			currentTaskId: null,
+		});
 		await Promise.all([
 			this.redisService.decrementWorkerCount(),
-			this.redisService.publishWorker(worker, "removed"),
+			this.redisService.publishWorker(worker, "updated"),
 		]);
 		await this.statsService.publishStats();
 	}

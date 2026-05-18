@@ -1,5 +1,13 @@
-import { AmqpEnvSchema, RedisEnvSchema } from "@sw/common/config";
+import { z } from "zod";
 
-const EnvSchema = RedisEnvSchema.extend(AmqpEnvSchema.shape);
+export const RedisEnvSchema = z.object({
+	REDIS_SW_HOST: z.string(),
+	REDIS_SW_PORT: z.coerce.number(),
+	REDIS_SW_PASSWORD: z.string().optional(),
+	REDIS_SW_USERNAME: z.string().optional(),
+});
 
-export const env = EnvSchema.parse(process.env);
+export const AmqpEnvSchema = z.object({
+	AMQP_URL: z.string(),
+	AMQP_QUEUE: z.string(),
+});

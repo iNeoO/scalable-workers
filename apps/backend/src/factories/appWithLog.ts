@@ -3,7 +3,7 @@ import {
 	logHttpCompletion,
 	pinoLogger,
 } from "@sw/infra/libs";
-import { Elysia } from "elysia";
+import { Elysia, status } from "elysia";
 
 const UNKNOWN_VALUE = "unknown";
 
@@ -31,7 +31,11 @@ const getStatusCode = (status: string | number | undefined) => {
 	}
 };
 
-export const createAppWithLog = ({ prefix = "" }: { prefix: string }) => {
+export const createAppWithLog = <T extends string>({
+	prefix,
+}: {
+	prefix: T;
+}) => {
 	return new Elysia({ prefix })
 		.derive({ as: "global" }, ({ headers, path, request }) => {
 			const logger = createHttpLogger({
@@ -40,7 +44,9 @@ export const createAppWithLog = ({ prefix = "" }: { prefix: string }) => {
 					method: request.method,
 					url: path,
 				},
-				userAgent: headers["user-agent"] ?? UNKNOWN_VALUE,
+				userAgent:
+					(headers as Record<string, string | undefined>)["user-agent"] ??
+					UNKNOWN_VALUE,
 			});
 
 			return {
@@ -73,9 +79,6 @@ export const createAppWithLog = ({ prefix = "" }: { prefix: string }) => {
 					status: set.status,
 				});
 			}
-		})
-		.get("/", ({ logger }) => {
-			logger.info("route hit");
-			return "test";
+			return status(500, "error in the application");
 		});
 };

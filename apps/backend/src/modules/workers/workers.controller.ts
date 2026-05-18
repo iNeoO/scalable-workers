@@ -1,6 +1,7 @@
 import { WORKERS_STATUS } from "@sw/common/constants";
 import { wrapWithLogger } from "@sw/infra/libs";
 import type { WorkersService } from "@sw/services";
+import { status } from "elysia";
 import { createAppWithLog } from "../../factories/appWithLog";
 import {
 	runWorkerContainer,
@@ -34,6 +35,7 @@ export const createWorkersController = (WorkersService: WorkersService) => {
 		.delete("/:id", async ({ logger, params: { id } }) => {
 			return wrapWithLogger(logger, async () => {
 				const worker = await WorkersService.shutdownWorker(id);
+				if (!worker) return status(404, "Worker not found");
 				const container = await stopWorkerContainer(id);
 
 				return {

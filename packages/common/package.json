@@ -24,11 +24,6 @@
 			"types": "./dist/types/index.d.ts",
 			"import": "./dist/types/index.js",
 			"default": "./dist/types/index.js"
-		},
-		"./config": {
-			"types": "./dist/config/index.d.ts",
-			"import": "./dist/config/index.js",
-			"default": "./dist/config/index.js"
 		}
 	},
 	"dependencies": {

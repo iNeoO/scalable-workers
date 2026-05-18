@@ -36,8 +36,6 @@ export class RedisSubscriber {
 	private taskCallback?: (type: TaskChannel, task: Task) => void;
 	private workerCallback?: (type: WorkerChannel, worker: Worker) => void;
 	private statsCallback?: (type: StatsChannel, stats: Stats) => void;
-	private taskTimeout?: ReturnType<typeof setTimeout>;
-	private workerTimeout?: ReturnType<typeof setTimeout>;
 	private statsTimeout?: ReturnType<typeof setTimeout>;
 
 	constructor(redis: Redis) {
@@ -80,14 +78,7 @@ export class RedisSubscriber {
 		try {
 			const json = JSON.parse(message);
 			const task = TaskSchema.parse(json);
-
-			if (this.taskTimeout) {
-				clearTimeout(this.taskTimeout);
-			}
-
-			this.taskTimeout = setTimeout(() => {
-				this.taskCallback?.(channel, task);
-			}, 400);
+			this.taskCallback?.(channel, task);
 		} catch (err) {
 			this.logParseError(err, message, channel, "task");
 		}
@@ -106,14 +97,7 @@ export class RedisSubscriber {
 		try {
 			const json = JSON.parse(message);
 			const worker = WorkerSchema.parse(json);
-
-			if (this.workerTimeout) {
-				clearTimeout(this.workerTimeout);
-			}
-
-			this.workerTimeout = setTimeout(() => {
-				this.workerCallback?.(channel, worker);
-			}, 400);
+			this.workerCallback?.(channel, worker);
 		} catch (err) {
 			this.logParseError(err, message, channel, "worker");
 		}
@@ -173,12 +157,6 @@ export class RedisSubscriber {
 
 	async unsubscribeTask() {
 		this.taskCallback = undefined;
-
-		if (this.taskTimeout) {
-			clearTimeout(this.taskTimeout);
-			this.taskTimeout = undefined;
-		}
-
 		await this.redis.punsubscribe(taskEventPattern());
 	}
 
@@ -194,12 +172,6 @@ export class RedisSubscriber {
 
 	async unsubscribeWorker() {
 		this.workerCallback = undefined;
-
-		if (this.workerTimeout) {
-			clearTimeout(this.workerTimeout);
-			this.workerTimeout = undefined;
-		}
-
 		await this.redis.punsubscribe(workerEventPattern());
 	}
 

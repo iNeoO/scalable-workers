@@ -141,8 +141,7 @@ export class WorkersService {
 			.returning();
 
 		if (!updatedWorker) {
-			logger.error({ id }, "failed to shutdown worker");
-			throw new Error("failed to shutdown worker");
+			return null;
 		}
 
 		const hydratedWorker = await this.getWorkerWithRelations(updatedWorker.id);

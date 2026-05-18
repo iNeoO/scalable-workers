@@ -1,6 +1,6 @@
 import { wrapWithLogger } from "@sw/infra/libs";
 import type { TasksService } from "@sw/services";
-import { t } from "elysia";
+import { status, t } from "elysia";
 import { createAppWithLog } from "../../factories/appWithLog";
 
 export const createTasksController = (tasksServices: TasksService) => {
@@ -20,6 +20,12 @@ export const createTasksController = (tasksServices: TasksService) => {
 			},
 		)
 		.delete("/:id", async ({ logger, params: { id } }) => {
-			return wrapWithLogger(logger, () => tasksServices.deleteTask(id));
+			return wrapWithLogger(logger, async () => {
+				const task = await tasksServices.deleteTask(id);
+				if (!task) return status(404, "Task not found");
+				return task;
+			});
 		});
 };
+
+export type TaskController = ReturnType<typeof createTasksController>;

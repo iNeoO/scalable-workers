@@ -1,5 +1,4 @@
 import { type Database, db } from "@sw/drizzle";
-import { env } from "@sw/infra/config";
 import { factory, type Redis } from "@sw/infra/libs";
 import {
 	RedisService,
@@ -8,6 +7,7 @@ import {
 	WorkersService,
 } from "@sw/services";
 import { TaskProvider } from "@sw/task-worker/provider";
+import { env } from "./config/env.js";
 
 export type AppServices = {
 	redis: Redis;
@@ -16,6 +16,7 @@ export type AppServices = {
 	tasksService: TasksService;
 	redisService: RedisService;
 	statsService: StatsService;
+	close: () => Promise<void>;
 };
 
 export const createServices = async (): Promise<AppServices> => {
@@ -50,5 +51,11 @@ export const createServices = async (): Promise<AppServices> => {
 		tasksService,
 		redisService,
 		statsService,
+		close: async () => {
+			await taskProvider.end();
+			await statsService.end();
+			await redis.quit();
+			await db.$client.end();
+		},
 	};
 };

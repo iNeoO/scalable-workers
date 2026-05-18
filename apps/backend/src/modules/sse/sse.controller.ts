@@ -6,7 +6,7 @@ import { createAppWithLog } from "../../factories/appWithLog.js";
 import type { SseMessage } from "./sse.type.js";
 
 export const createSseController = (redis: Redis) => {
-	return createAppWithLog({ prefix: "stats" }).get(
+	return createAppWithLog({ prefix: "sse" }).get(
 		"/",
 		async function* ({ logger }) {
 			const redisSubscriber = new RedisSubscriber(redis.duplicate());
@@ -51,7 +51,7 @@ export const createSseController = (redis: Redis) => {
 					}
 				}
 			} finally {
-				await redisSubscriber.destroy();
+				await redisSubscriber?.destroy().catch(() => {});
 			}
 		},
 	);

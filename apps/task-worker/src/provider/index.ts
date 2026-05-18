@@ -15,12 +15,7 @@ export class TaskProvider {
 	async init() {
 		this.connection = await amqp.connect(this.url);
 		this.channel = await this.connection.createChannel();
-		await this.channel.assertQueue(this.queue, {
-			durable: true,
-			arguments: {
-				"x-queue-type": "quorum",
-			},
-		});
+		await this.channel.assertQueue(this.queue);
 	}
 
 	send(id: string) {
@@ -37,9 +32,12 @@ export class TaskProvider {
 		});
 	}
 
-	async close() {
+	async end() {
+		if (this.channel) {
+			await this.channel.close();
+		}
 		if (this.connection) {
-			return await this.connection.close();
+			await this.connection.close();
 		}
 	}
 }

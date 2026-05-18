@@ -98,11 +98,6 @@ export class TasksService {
 			.where(eq(tasksTable.id, id))
 			.returning();
 
-		if (!deletedTask) {
-			logger.error({ id }, "failed to delete task");
-			throw new Error("failed to delete task");
-		}
-
-		return deletedTask;
+		return deletedTask ?? null;
 	}
 }

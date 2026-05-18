@@ -24,6 +24,7 @@ const readStream = async (stream: ReadableStream<Uint8Array> | null) => {
 
 export const runWorkerContainer = async (workerId: string) => {
 	const missingEnv = requiredEnvKeys.filter((key) => !process.env[key]);
+	const containerName = getWorkerContainerName(workerId);
 	if (missingEnv.length > 0) {
 		throw new Error(`missing docker worker env: ${missingEnv.join(", ")}`);
 	}
@@ -36,7 +37,7 @@ export const runWorkerContainer = async (workerId: string) => {
 			"-d",
 			"--rm",
 			"--name",
-			getWorkerContainerName(workerId),
+			containerName,
 			"--env",
 			`WORKER_ID=${workerId}`,
 			...getDockerEnvArgs(requiredEnvKeys),
@@ -64,14 +65,15 @@ export const runWorkerContainer = async (workerId: string) => {
 
 	return {
 		containerId: stdout.trim(),
-		containerName: getWorkerContainerName(workerId),
+		containerName,
 		image,
 	};
 };
 
 export const stopWorkerContainer = async (workerId: string) => {
+	const containerName = getWorkerContainerName(workerId);
 	const proc = Bun.spawn({
-		cmd: ["docker", "stop", getWorkerContainerName(workerId)],
+		cmd: ["docker", "stop", containerName],
 		stdin: "ignore",
 		stdout: "pipe",
 		stderr: "pipe",
@@ -90,6 +92,6 @@ export const stopWorkerContainer = async (workerId: string) => {
 	}
 
 	return {
-		containerName: getWorkerContainerName(workerId),
+		containerName,
 	};
 };

@@ -6,6 +6,7 @@
 		"build": "npx nx run-many -t build --all",
 		"worker:dev": "dotenv -e .env -- bun run --filter @sw/task-worker dev",
 		"backend:dev": "dotenv -e .env -- bun run --filter @sw/backend dev",
+		"frontend:dev": "dotenv -e .env -- bun run --filter @sw/frontend dev",
 		"db:generate": "dotenv -e .env -- bun run --filter @sw/drizzle generate",
 		"db:push": "dotenv -e .env -- bun run --filter @sw/drizzle push",
 		"db:pull": "dotenv -e .env -- bun run --filter @sw/drizzle pull",

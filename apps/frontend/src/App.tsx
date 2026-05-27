@@ -1,5 +1,6 @@
 import { Text, Title } from "@mantine/core";
 import { ScoreCards } from "./components/ScoreCards";
+import { TaskCards } from "./components/TaskCards";
 import { WorkerCards } from "./components/WorkerCards";
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
 			<main>
 				<ScoreCards />
 				<WorkerCards />
+				<TaskCards />
 			</main>
 			<footer></footer>
 		</div>

@@ -15,7 +15,24 @@ export class TaskProvider {
 	async init() {
 		this.connection = await amqp.connect(this.url);
 		this.channel = await this.connection.createChannel();
-		await this.channel.assertQueue(this.queue);
+		const dlx = `${this.queue}.dlx`;
+		const dlq = `${this.queue}.dlq`;
+		const dlRoutingKey = `${this.queue}.dead`;
+
+		await this.channel.assertExchange(dlx, "direct", {
+			durable: true,
+		});
+		await this.channel.assertQueue(dlq, {
+			durable: true,
+		});
+		await this.channel.bindQueue(dlq, dlx, dlRoutingKey);
+		await this.channel.assertQueue(this.queue, {
+			durable: true,
+			arguments: {
+				"x-dead-letter-exchange": dlx,
+				"x-dead-letter-routing-key": dlRoutingKey,
+			},
+		});
 	}
 
 	send(id: string) {

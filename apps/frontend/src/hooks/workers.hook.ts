@@ -1,4 +1,9 @@
-import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
+import {
+	queryOptions,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import {
 	createWorker,
 	deleteWorker,
@@ -15,13 +20,23 @@ export function useWorkers() {
 }
 
 export function useCreateWorker() {
+	const queryClient = useQueryClient();
+
 	return useMutation({
 		mutationFn: createWorker,
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: workersQueryOptions.queryKey });
+		},
 	});
 }
 
 export function useDeleteWorker() {
+	const queryClient = useQueryClient();
+
 	return useMutation({
 		mutationFn: deleteWorker,
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: workersQueryOptions.queryKey });
+		},
 	});
 }

@@ -1,4 +1,9 @@
-import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
+import {
+	queryOptions,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 import { createTask, deleteTask, getTasks } from "../libs/api/tasks.api";
 
 export const tasksQueryOptions = queryOptions({
@@ -11,8 +16,13 @@ export function useTasks() {
 }
 
 export function useCreateTask() {
+	const queryClient = useQueryClient();
+
 	return useMutation({
 		mutationFn: createTask,
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: tasksQueryOptions.queryKey });
+		},
 	});
 }
 

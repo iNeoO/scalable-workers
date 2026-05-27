@@ -55,6 +55,10 @@ export class TaskConsumer {
 	}
 
 	async init() {
+		await wrapWithLogger(this.logger, () => this.initConsumer());
+	}
+
+	private async initConsumer() {
 		this.connection = await amqp.connect(this.url);
 		const channel = await this.connection.createChannel();
 		this.channel = channel;
@@ -224,31 +228,33 @@ export class TaskConsumer {
 	}
 
 	async end() {
-		if (this.channel && this.consumerTag) {
-			await this.channel.cancel(this.consumerTag);
-		}
+		await wrapWithLogger(this.logger, async () => {
+			if (this.channel && this.consumerTag) {
+				await this.channel.cancel(this.consumerTag);
+			}
 
-		if (this.currentTask) {
-			await this.currentTask;
-		}
+			if (this.currentTask) {
+				await this.currentTask;
+			}
 
-		if (this.channel) {
-			await this.channel.close();
-		}
+			if (this.channel) {
+				await this.channel.close();
+			}
 
-		if (this.connection) {
-			await this.connection.close();
-		}
+			if (this.connection) {
+				await this.connection.close();
+			}
 
-		const worker = await this.workersService.updateWorker({
-			id: this.id,
-			status: WORKERS_STATUS.SHUTDOWN,
-			currentTaskId: null,
+			const worker = await this.workersService.updateWorker({
+				id: this.id,
+				status: WORKERS_STATUS.SHUTDOWN,
+				currentTaskId: null,
+			});
+			await Promise.all([
+				this.redisService.decrementWorkerCount(),
+				this.redisService.publishWorker(worker, "updated"),
+			]);
+			await this.statsService.publishStats();
 		});
-		await Promise.all([
-			this.redisService.decrementWorkerCount(),
-			this.redisService.publishWorker(worker, "updated"),
-		]);
-		await this.statsService.publishStats();
 	}
 }

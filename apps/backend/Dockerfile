@@ -7,6 +7,8 @@ COPY package.json bun.lock /temp/dev/
 COPY package.json bun.lock /temp/prod/
 COPY apps/backend/package.json /temp/dev/apps/backend/package.json
 COPY apps/backend/package.json /temp/prod/apps/backend/package.json
+COPY apps/frontend/package.json /temp/dev/apps/frontend/package.json
+COPY apps/frontend/package.json /temp/prod/apps/frontend/package.json
 COPY apps/task-worker/package.json /temp/dev/apps/task-worker/package.json
 COPY apps/task-worker/package.json /temp/prod/apps/task-worker/package.json
 COPY packages/common/package.json /temp/dev/packages/common/package.json
@@ -39,4 +41,3 @@ COPY --from=prerelease /usr/src/app/packages/services ./packages/services
 USER bun
 EXPOSE 3000/tcp
 ENTRYPOINT ["bun", "apps/backend/dist/index.js"]
-

@@ -15,7 +15,8 @@
 		"@sw/infra": "workspace:*",
 		"@sw/task-worker": "workspace:*",
 		"@sw/services": "workspace:*",
-		"elysia": "catalog:"
+		"elysia": "catalog:",
+		"zod": "catalog:"
 	},
 	"exports": {
 		".": {

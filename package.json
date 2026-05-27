@@ -7,6 +7,7 @@
 		"worker:dev": "dotenv -e .env -- bun run --filter @sw/task-worker dev",
 		"backend:dev": "dotenv -e .env -- bun run --filter @sw/backend dev",
 		"frontend:dev": "dotenv -e .env -- bun run --filter @sw/frontend dev",
+		"dev": "dotenv -e .env -- bun run --parallel worker:dev backend:dev frontend:dev",
 		"db:generate": "dotenv -e .env -- bun run --filter @sw/drizzle generate",
 		"db:push": "dotenv -e .env -- bun run --filter @sw/drizzle push",
 		"db:pull": "dotenv -e .env -- bun run --filter @sw/drizzle pull",
@@ -14,6 +15,7 @@
 		"db:up": "dotenv -e .env -- bun run --filter @sw/drizzle up",
 		"db:studio": "dotenv -e .env -- bun run --filter @sw/drizzle studio",
 		"db:migrate": "dotenv -e .env -- bun run --filter @sw/drizzle migrate",
+		"db:reset": "dotenv -e .env -- bun run --filter @sw/drizzle reset",
 		"lint": "npx nx run-many -t lint --all"
 	},
 	"private": true,

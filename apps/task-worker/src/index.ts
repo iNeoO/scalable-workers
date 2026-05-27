@@ -38,6 +38,7 @@ const main = async (id: string, url: string, queue: string) => {
 		statsService,
 	);
 
+	await statsService.init();
 	await taskConsumer.init();
 
 	let isShuttingDown = false;
@@ -47,6 +48,7 @@ const main = async (id: string, url: string, queue: string) => {
 		isShuttingDown = true;
 		pinoLogger.info(`${signal} received. Graceful shutdown initiated.`);
 		await taskConsumer.end();
+		await statsService.end();
 		await db.$client.end();
 		process.exit(0);
 	};

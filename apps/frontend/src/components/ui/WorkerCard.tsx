@@ -1,13 +1,7 @@
-import {
-	ActionIcon,
-	Card,
-	Group,
-	Text,
-	Tooltip,
-} from "@mantine/core";
-import { WORKERS_STATUS } from "@sw/common/constants";
+import { ActionIcon, Card, Group, Text, Tooltip } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
+import { WORKERS_STATUS } from "@sw/common/constants";
 import { useDeleteWorker } from "../../hooks/workers.hook";
 import type { getWorkers } from "../../libs/api/workers.api";
 import { WorkerBadge } from "./WorkerBadge";
@@ -51,7 +45,9 @@ const TrashIcon = () => {
 
 export const WorkerCard = ({ worker }: WorkerCardProps) => {
 	const deleteWorkerMutation = useDeleteWorker();
-	const currentTaskLabel = worker.currentTask ? shortId(worker.currentTask.id) : "---";
+	const currentTaskLabel = worker.currentTask
+		? shortId(worker.currentTask.id)
+		: "---";
 	const completedTasks = worker.processedTasks.length;
 	const canDeleteWorker = worker.status !== WORKERS_STATUS.SHUTDOWN;
 
@@ -118,7 +114,9 @@ export const WorkerCard = ({ worker }: WorkerCardProps) => {
 				<Group align="center" className="shrink-0" gap="md" wrap="nowrap">
 					<Text c="dimmed" size="sm">
 						<span className="mr-1 uppercase">Completed:</span>
-						<span className="font-semibold text-slate-900">{completedTasks}</span>
+						<span className="font-semibold text-slate-900">
+							{completedTasks}
+						</span>
 					</Text>
 					{canDeleteWorker ? (
 						<ActionIcon

@@ -16,7 +16,7 @@
 		"db:studio": "dotenv -e .env -- bun run --filter @sw/drizzle studio",
 		"db:migrate": "dotenv -e .env -- bun run --filter @sw/drizzle migrate",
 		"scripts:reset": "dotenv -e .env -- bun run --filter @sw/scripts reset",
-		"lint": "npx nx run-many -t lint --all"
+		"lint": "nx run-many -t lint --all"
 	},
 	"private": true,
 	"devDependencies": {

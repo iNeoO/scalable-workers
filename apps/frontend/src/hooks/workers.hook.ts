@@ -25,7 +25,9 @@ export function useCreateWorker() {
 	return useMutation({
 		mutationFn: createWorker,
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: workersQueryOptions.queryKey });
+			await queryClient.invalidateQueries({
+				queryKey: workersQueryOptions.queryKey,
+			});
 		},
 	});
 }
@@ -36,7 +38,9 @@ export function useDeleteWorker() {
 	return useMutation({
 		mutationFn: deleteWorker,
 		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: workersQueryOptions.queryKey });
+			await queryClient.invalidateQueries({
+				queryKey: workersQueryOptions.queryKey,
+			});
 		},
 	});
 }

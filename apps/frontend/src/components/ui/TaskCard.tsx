@@ -58,7 +58,9 @@ export const TaskCard = ({ task }: TaskCardProps) => {
 					{task.status === TASKS_STATUS.FINISHED ? (
 						<Text c="dimmed" className="shrink-0" size="sm">
 							<span className="mr-1 uppercase">Finished:</span>
-							<span className="text-slate-900">{formatTime(task.finishedAt)}</span>
+							<span className="text-slate-900">
+								{formatTime(task.finishedAt)}
+							</span>
 						</Text>
 					) : null}
 				</Group>

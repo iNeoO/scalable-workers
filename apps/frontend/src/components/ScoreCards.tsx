@@ -2,7 +2,8 @@ import { Alert, Text } from "@mantine/core";
 import { useStats } from "../hooks/stats.hook";
 import { ScoreCard } from "./ui/ScoreCard";
 
-const formatNumber = (value: number) => new Intl.NumberFormat("en-GB").format(value);
+const formatNumber = (value: number) =>
+	new Intl.NumberFormat("en-GB").format(value);
 
 const QueueIcon = () => {
 	return (
@@ -138,7 +139,12 @@ export const ScoreCards = () => {
 				</Text>
 			</div>
 			{statsQuery.isError ? (
-				<Alert color="red" radius="lg" title="Stats unavailable" variant="light">
+				<Alert
+					color="red"
+					radius="lg"
+					title="Stats unavailable"
+					variant="light"
+				>
 					{statsQuery.error instanceof Error
 						? statsQuery.error.message
 						: "Failed to load stats"}

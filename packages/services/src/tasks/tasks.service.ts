@@ -29,6 +29,7 @@ export class TasksService {
 
 	async getTasks() {
 		return await this.drizzle.query.tasksTable.findMany({
+			orderBy: (tasks, { desc }) => [desc(tasks.createdAt)],
 			with: {
 				processedByWorker: true,
 			},

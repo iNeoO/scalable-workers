@@ -11,7 +11,6 @@
 		"up": "bunx drizzle-kit up",
 		"studio": "bunx drizzle-kit studio",
 		"migrate": "bunx drizzle-kit migrate",
-		"reset": "bun ./scripts/reset.ts",
 		"lint": "biome check"
 	},
 	"main": "./dist/index.js",

@@ -28,3 +28,7 @@ services:
 
 volumes:
   pgdata:
+
+networks:
+  default:
+    name: scalable-workers_default

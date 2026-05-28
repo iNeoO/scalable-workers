@@ -1,9 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { connectSse } from "../libs/api/sse.api";
-import { statsQueryOptions } from "./stats.hook";
-import { tasksQueryOptions } from "./tasks.hook";
-import { workersQueryOptions } from "./workers.hook";
+import { applySseMessage } from "./sse-cache";
 
 export function useSSE() {
 	const queryClient = useQueryClient();
@@ -22,63 +20,7 @@ export function useSSE() {
 
 					for await (const chunk of stream) {
 						if (cancelled) return;
-
-						switch (chunk.event) {
-							case "stats.updated":
-								queryClient.setQueryData(
-									statsQueryOptions.queryKey,
-									chunk.data.stats,
-								);
-								break;
-
-							case "task.created":
-								queryClient.setQueryData(
-									tasksQueryOptions.queryKey,
-									(prev = []) => [
-										{ ...chunk.data.task, processedByWorker: null },
-										...prev,
-									],
-								);
-								break;
-
-							case "task.started":
-							case "task.finished":
-								queryClient.setQueryData(
-									tasksQueryOptions.queryKey,
-									(prev = []) =>
-										prev.map((t) =>
-											t.id === chunk.data.task.id
-												? { ...t, ...chunk.data.task }
-												: t,
-										),
-								);
-								break;
-
-							case "worker.created":
-								queryClient.setQueryData(
-									workersQueryOptions.queryKey,
-									(prev = []) => [...prev, chunk.data.worker],
-								);
-								break;
-
-							case "worker.updated":
-								queryClient.setQueryData(
-									workersQueryOptions.queryKey,
-									(prev = []) =>
-										prev.map((w) =>
-											w.id === chunk.data.worker.id ? chunk.data.worker : w,
-										),
-								);
-								break;
-
-							case "worker.removed":
-								queryClient.setQueryData(
-									workersQueryOptions.queryKey,
-									(prev = []) =>
-										prev.filter((w) => w.id !== chunk.data.worker.id),
-								);
-								break;
-						}
+						applySseMessage(queryClient, chunk);
 					}
 				} catch {
 					if (cancelled) return;

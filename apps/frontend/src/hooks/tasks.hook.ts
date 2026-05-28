@@ -6,6 +6,8 @@ import {
 } from "@tanstack/react-query";
 import { createTask, deleteTask, getTasks } from "../libs/api/tasks.api";
 
+type CachedTask = Awaited<ReturnType<typeof getTasks>>[number];
+
 export const tasksQueryOptions = queryOptions({
 	queryKey: ["tasks"] as const,
 	queryFn: getTasks,
@@ -20,8 +22,18 @@ export function useCreateTask() {
 
 	return useMutation({
 		mutationFn: createTask,
-		onSuccess: async () => {
-			await queryClient.invalidateQueries({ queryKey: tasksQueryOptions.queryKey });
+		onSuccess: (createdTask) => {
+			queryClient.setQueryData(tasksQueryOptions.queryKey, (prev = []) => {
+				const task: CachedTask = {
+					...createdTask,
+					processedByWorker: null,
+				};
+
+				return [
+					task,
+					...prev.filter((cachedTask) => cachedTask.id !== createdTask.id),
+				];
+			});
 		},
 	});
 }

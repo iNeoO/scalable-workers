@@ -5,6 +5,7 @@ import {
 	Text,
 	Tooltip,
 } from "@mantine/core";
+import { WORKERS_STATUS } from "@sw/common/constants";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useDeleteWorker } from "../../hooks/workers.hook";
@@ -52,6 +53,7 @@ export const WorkerCard = ({ worker }: WorkerCardProps) => {
 	const deleteWorkerMutation = useDeleteWorker();
 	const currentTaskLabel = worker.currentTask ? shortId(worker.currentTask.id) : "---";
 	const completedTasks = worker.processedTasks.length;
+	const canDeleteWorker = worker.status !== WORKERS_STATUS.SHUTDOWN;
 
 	const handleDelete = () => {
 		modals.openConfirmModal({
@@ -118,15 +120,17 @@ export const WorkerCard = ({ worker }: WorkerCardProps) => {
 						<span className="mr-1 uppercase">Completed:</span>
 						<span className="font-semibold text-slate-900">{completedTasks}</span>
 					</Text>
-					<ActionIcon
-						aria-label={`Delete worker ${shortId(worker.id)}`}
-						color="red"
-						disabled={deleteWorkerMutation.isPending}
-						onClick={handleDelete}
-						variant="subtle"
-					>
-						<TrashIcon />
-					</ActionIcon>
+					{canDeleteWorker ? (
+						<ActionIcon
+							aria-label={`Delete worker ${shortId(worker.id)}`}
+							color="red"
+							disabled={deleteWorkerMutation.isPending}
+							onClick={handleDelete}
+							variant="subtle"
+						>
+							<TrashIcon />
+						</ActionIcon>
+					) : null}
 				</Group>
 			</Group>
 		</Card>

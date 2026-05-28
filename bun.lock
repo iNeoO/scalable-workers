@@ -123,6 +123,20 @@
         "typescript": "^5",
       },
     },
+    "packages/scripts": {
+      "name": "@sw/scripts",
+      "dependencies": {
+        "amqplib": "catalog:",
+        "dotenv": "catalog:",
+        "ioredis": "catalog:",
+        "pg": "catalog:",
+      },
+      "devDependencies": {
+        "@biomejs/biome": "catalog:",
+        "@types/bun": "catalog:",
+        "@types/pg": "catalog:",
+      },
+    },
     "packages/services": {
       "name": "@sw/services",
       "dependencies": {
@@ -588,6 +602,8 @@
     "@sw/frontend": ["@sw/frontend@workspace:apps/frontend"],
 
     "@sw/infra": ["@sw/infra@workspace:packages/infra"],
+
+    "@sw/scripts": ["@sw/scripts@workspace:packages/scripts"],
 
     "@sw/services": ["@sw/services@workspace:packages/services"],
 

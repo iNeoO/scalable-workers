@@ -38,7 +38,7 @@ export const TaskCards = () => {
 	return (
 		<section className="mt-8">
 			<Group align="end" className="mb-4" justify="space-between">
-				<Title order={2}>Tasks</Title>
+				<Title order={2}>Tasks ({tasks.length})</Title>
 				<Group align="end" justify="flex-end">
 					<NumberInput
 						decimalScale={0}

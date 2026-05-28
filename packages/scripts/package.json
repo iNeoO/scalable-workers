@@ -1,0 +1,20 @@
+{
+	"name": "@sw/scripts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"reset": "bun ./src/reset.ts",
+		"lint": "biome check"
+	},
+	"dependencies": {
+		"amqplib": "catalog:",
+		"dotenv": "catalog:",
+		"ioredis": "catalog:",
+		"pg": "catalog:"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "catalog:",
+		"@types/bun": "catalog:",
+		"@types/pg": "catalog:"
+	}
+}
